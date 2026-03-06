@@ -1,0 +1,14 @@
+# Example Terraform variables file
+# Copy this file to terraform.tfvars and customize the values
+
+# resource_group_name = "rg-documentdb-centralus"
+# location = "Central US"
+# replica_location = "East US 2"
+# vnet_address_space = ["10.0.0.0/16"]
+# pe_subnet_prefix = ["10.0.1.0/24"]
+# mongo_compute_tier = "M30"
+# mongo_shard_count = 1
+# mongo_storage_size_gb = 128
+# mongo_version = "8.0"
+# mongo_admin_username = "mongoadmin"
+# high_availability_mode = "ZoneRedundantPreferred"
