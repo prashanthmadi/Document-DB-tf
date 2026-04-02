@@ -1,10 +1,10 @@
-# Azure Cosmos DB for MongoDB vCore with Terraform
+# Azure DocumentDB (with MongoDB compatibility) with Terraform
 
-Deploy Azure Cosmos DB for MongoDB (vCore) with Customer Managed Keys, High Availability, and Geo-Replication.
+Deploy Azure DocumentDB (with MongoDB compatibility) with Customer Managed Keys, High Availability, and Geo-Replication.
 
 ## Features
 
-- **MongoDB vCore 8.0** with M30 compute tier
+- **MongoDB-compatible vCore 8.0** with M30 compute tier
 - **High Availability** with Zone Redundant deployment
 - **Customer Managed Keys** via Azure Key Vault
 - **Private Endpoint** connectivity
@@ -12,6 +12,8 @@ Deploy Azure Cosmos DB for MongoDB (vCore) with Customer Managed Keys, High Avai
 - **Network Isolation** with VNet and Private DNS
 
 ## Deployment
+
+> Note: The Azure service is now branded as Azure DocumentDB. Some Terraform resources and outputs may still use legacy Cosmos DB Mongo vCore naming.
 
 ```bash
 # Login to Azure
