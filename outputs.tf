@@ -59,3 +59,13 @@ output "mongo_replica_location" {
   description = "The location of the MongoDB cluster geo-replica"
   value       = azurerm_mongo_cluster.mongo_replica.location
 }
+
+output "replica_vnet_id" {
+  description = "The ID of the replica region virtual network"
+  value       = azurerm_virtual_network.vnet_replica.id
+}
+
+output "replica_private_endpoint_ip" {
+  description = "The private IP address of the MongoDB cluster geo-replica"
+  value       = azurerm_private_endpoint.mongo_pe_replica.private_service_connection[0].private_ip_address
+}

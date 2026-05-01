@@ -13,15 +13,15 @@ variable "location" {
 }
 
 variable "vnet_address_space" {
-  description = "Address space for the virtual network"
+  description = "Address space for the virtual network (/25 = 128 addresses)"
   type        = list(string)
-  default     = ["10.0.0.0/16"]
+  default     = ["10.0.0.0/25"]
 }
 
 variable "pe_subnet_prefix" {
-  description = "Address prefix for private endpoint subnet"
+  description = "Address prefix for private endpoint subnet (/27 = 32 addresses, 27 usable)"
   type        = list(string)
-  default     = ["10.0.1.0/24"]
+  default     = ["10.0.0.0/27"]
 }
 
 variable "mongo_compute_tier" {
@@ -70,4 +70,16 @@ variable "replica_resource_group_name" {
   description = "Name of the resource group for the replica"
   type        = string
   default     = "rg-documentdb-replica-eastus2"
+}
+
+variable "replica_vnet_address_space" {
+  description = "Address space for the replica region virtual network (/25 = 128 addresses)"
+  type        = list(string)
+  default     = ["10.1.0.0/25"]
+}
+
+variable "replica_pe_subnet_prefix" {
+  description = "Address prefix for the replica region private endpoint subnet (/27 = 32 addresses, 27 usable)"
+  type        = list(string)
+  default     = ["10.1.0.0/27"]
 }

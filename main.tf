@@ -177,7 +177,10 @@ resource "azurerm_mongo_cluster" "mongo_replica" {
       shard_count,
       storage_size_in_gb,
       compute_tier,
-      version
+      version,
+      source_server_id,
+      source_location,
+      create_mode
     ]
   }
 
@@ -218,4 +221,76 @@ resource "azurerm_private_endpoint" "mongo_pe" {
   }
 
   depends_on = [azurerm_mongo_cluster.mongo]
+}
+
+# Virtual Network in the replica region
+resource "azurerm_virtual_network" "vnet_replica" {
+  name                = "vnet-documentdb-replica"
+  location            = azurerm_resource_group.rg_replica.location
+  resource_group_name = azurerm_resource_group.rg_replica.name
+  address_space       = var.replica_vnet_address_space
+}
+
+# Subnet for Private Endpoint in the replica region
+resource "azurerm_subnet" "pe_subnet_replica" {
+  name                 = "snet-privateendpoint"
+  resource_group_name  = azurerm_resource_group.rg_replica.name
+  virtual_network_name = azurerm_virtual_network.vnet_replica.name
+  address_prefixes     = var.replica_pe_subnet_prefix
+}
+
+# Link the existing Private DNS Zone to the replica VNet
+# (the privatelink.mongocluster.cosmos.azure.com zone is global; linking it
+# to the replica VNet allows resolution of the replica PE FQDN there)
+resource "azurerm_private_dns_zone_virtual_network_link" "mongo_dns_link_replica" {
+  name                  = "mongo-dns-link-replica"
+  resource_group_name   = azurerm_resource_group.rg.name
+  private_dns_zone_name = azurerm_private_dns_zone.mongo_dns.name
+  virtual_network_id    = azurerm_virtual_network.vnet_replica.id
+}
+
+# Private Endpoint for the MongoDB Cluster geo-replica
+resource "azurerm_private_endpoint" "mongo_pe_replica" {
+  name                = "pe-mongo-replica"
+  location            = azurerm_resource_group.rg_replica.location
+  resource_group_name = azurerm_resource_group.rg_replica.name
+  subnet_id           = azurerm_subnet.pe_subnet_replica.id
+
+  private_service_connection {
+    name                           = "psc-mongo-replica"
+    private_connection_resource_id = azurerm_mongo_cluster.mongo_replica.id
+    is_manual_connection           = false
+    subresource_names              = ["MongoCluster"]
+  }
+
+  private_dns_zone_group {
+    name                 = "mongo-dns-zone-group"
+    private_dns_zone_ids = [azurerm_private_dns_zone.mongo_dns.id]
+  }
+
+  depends_on = [azurerm_mongo_cluster.mongo_replica]
+}
+
+# VNet peering: primary (Central US) -> replica (East US 2)
+resource "azurerm_virtual_network_peering" "primary_to_replica" {
+  name                         = "peer-primary-to-replica"
+  resource_group_name          = azurerm_resource_group.rg.name
+  virtual_network_name         = azurerm_virtual_network.vnet.name
+  remote_virtual_network_id    = azurerm_virtual_network.vnet_replica.id
+  allow_virtual_network_access = true
+  allow_forwarded_traffic      = false
+  allow_gateway_transit        = false
+  use_remote_gateways          = false
+}
+
+# VNet peering: replica (East US 2) -> primary (Central US)
+resource "azurerm_virtual_network_peering" "replica_to_primary" {
+  name                         = "peer-replica-to-primary"
+  resource_group_name          = azurerm_resource_group.rg_replica.name
+  virtual_network_name         = azurerm_virtual_network.vnet_replica.name
+  remote_virtual_network_id    = azurerm_virtual_network.vnet.id
+  allow_virtual_network_access = true
+  allow_forwarded_traffic      = false
+  allow_gateway_transit        = false
+  use_remote_gateways          = false
 }
